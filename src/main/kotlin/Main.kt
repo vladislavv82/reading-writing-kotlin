@@ -5,23 +5,25 @@ import java.util.*
 
 fun main(args: Array<String>) {
         //Здесь будем использовать 2-ой способ чтения и записи
-        val inputFile = File("C:\\Users\\Владислав\\Desktop\\KotlinLab2\\src\\main\\Task\\task.txt")
-        val outputFile = File("C:\\Users\\Владислав\\Desktop\\KotlinLab2\\src\\main\\Task\\resultat.txt")
+        val source = "C:\\Users\\Владислав\\Desktop\\KotlinLab2\\src\\main\\Task\\task.txt"
+        val folder = "C:\\Users\\Владислав\\Desktop\\KotlinLab2\\src\\main\\Task\\resultat.txt"
 
-        // Чтение содержимого файла в строку
-        val stringList = inputFile.readLines() //считываем построчно
-        println("Папка прочитана")
+        println("Вы попали в меню, выберите действие:")
+        println("1) С помощью Input- и OutputStream\n" +
+                "2) С помощью встроенных методов Kotlin\n" +
+                "3) С помощью  BufferedReader и BufferedWriter")
+        println("Введите номер: ")
 
-        // Удаление пробелов из строки
-        val resultString = stringList.map { it.trim().replace(Regex("\\s+"), " ") }
-        println("Привожу файл к нужному результату")
-        // trim убирает пробелы в начале и в конце
-        //replace заменяет Regex регулярное выражение которое видет 2 и больше пробела заменяя их на 1
+        val scanner = Scanner(System.`in`)
+        val x = scanner.nextInt()
+
+        when(x){
+                1 -> InputOutputStreamKotlin(source, folder)
+                2 -> KotlinMethod(source, folder)
+                3 -> BufferedKotlin(source,folder)
+        }
 
 
-        // Запись результата в файл
-        outputFile.writeText(resultString.joinToString("\n")) //после каждой строки \n
-        println("Создаю файл result.txt")
 
         // Создание новой папки
         val folderResult = File("C:\\Users\\Владислав\\Desktop\\KotlinLab2\\src\\main\\folderResult")
@@ -34,7 +36,7 @@ fun main(args: Array<String>) {
                 println("Папка уже существует, перемещаю в директорию выше")
         }
 
-        // Теперь перелаживаем файл result в нову папку folderResult
+        // Теперь перелаживаем файл result в новую папку folderResult
         // Можно функцию переноса вынести отдельно
         try { moveFile("C:\\Users\\Владислав\\Desktop\\KotlinLab2\\src\\main\\Task\\resultat.txt",
                         "C:\\Users\\Владислав\\Desktop\\KotlinLab2\\src\\main\\folderResult")
@@ -59,35 +61,69 @@ fun main(args: Array<String>) {
 //Чтение и запись 1-м способом
 fun InputOutputStreamKotlin(source: String, folder: String) {
 
-        val inputStream = FileInputStream(source)
-        val outputStream = FileOutputStream(folder)
-        val buffer = ByteArray(1024)
+        val inputFile = File(source)
+        val outputFile = File(folder)
 
-        var length = inputStream.read(buffer)
-        while (length > 0) {
-                outputStream.write(buffer, 0, length)
-                length = inputStream.read(buffer)
+        var i: Int
+        val builder = StringBuilder()
+        val inputStream = InputStreamReader(inputFile.inputStream(), "UTF-8")
+
+        while (inputStream.read().also { i = it } != -1) {
+                builder.append(i.toChar())
         }
+        val finally = builder.trim().replace(Regex("( )+"), " ")
 
+        val outputStream = OutputStreamWriter(outputFile.outputStream(), "UTF-8")
+        outputStream.write(finally)
+
+        //закрываем потоки
         inputStream.close()
         outputStream.close()
 }
-//Чтение и запись 3-м способом
-fun BufferKotlin(source: String, folder: String) {
-        val reader = BufferedReader(FileReader(source))
-        val writer = BufferedWriter(FileWriter(folder))
-        var line: String? = reader.readLine()
+//Чтение и запись 2-м способом
+fun KotlinMethod(source: String, folder: String){
 
+        val inputFile = File(source)
+        val outputFile = File(folder)
+        // Чтение содержимого файла в строку
+        val stringList = inputFile.readLines() //считываем построчно
+        println("Папка прочитана")
+
+        // Удаление пробелов из строки
+        val resultString = stringList.map { it.trim().replace(Regex("\\s+"), " ") }
+        println("Привожу файл к нужному результату")
+        // trim убирает пробелы в начале и в конце
+        //replace заменяет Regex регулярное выражение которое видит 2 и больше пробела заменяя их на 1
+
+
+        // Запись результата в файл
+        outputFile.writeText(resultString.joinToString("\n")) //после каждой строки \n
+        println("Создаю файл result.txt")
+}
+
+//Чтение и запись 3-м способом
+fun BufferedKotlin(source: String, folder: String) {
+
+        val sourceFile = File(source)
+        val folderFile = File(folder)
+
+        // Создаем BufferedReader и BufferedWriter для чтения и записи файлов
+        val reader = BufferedReader(FileReader(sourceFile))
+        val writer = BufferedWriter(FileWriter(folderFile))
+
+        // Считываем файл по строкам и удаляем повторяющиеся пробелы
+        var line = reader.readLine()
         while (line != null) {
-                writer.write(line)
+                val editedLine = line.trim().replace("\\s+".toRegex(), " ")
+                writer.write(editedLine)
                 writer.newLine()
                 line = reader.readLine()
         }
 
+        // Закрываем все stream
         reader.close()
         writer.close()
 }
-
 
 //Функция для переноса файлов в другую папку
 fun moveFile(source: String, folder: String) {
